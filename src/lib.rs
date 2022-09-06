@@ -1,9 +1,10 @@
-use image::GenericImage;
+use image::{GenericImage, ImageDecoder};
 use raw_gl_context::{GlConfig, GlContext};
 use std::mem;
 use std::os::raw::c_void;
 use std::path::Path;
 use std::ptr::null;
+use std::include_bytes;
 use winit::dpi::{LogicalSize, PhysicalSize};
 use winit::event::{ElementState, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
@@ -205,14 +206,16 @@ impl App {
             gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::NEAREST as i32);
             gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::NEAREST as i32);
 
-            let img = image::open(&Path::new("res/texture.png")).expect("Failed to load texture");
+            // let img = image::open(&Path::new("res/texture.png")).expect("Failed to load texture");
+            let bin_data = include_bytes!("../res/texture.png");
+            let img = image::load_from_memory_with_format(bin_data, image::ImageFormat::PNG).expect("Failed to load texture");
             let data = img.raw_pixels();
             gl::TexImage2D(
                 gl::TEXTURE_2D,
                 0,
                 gl::RGB as i32,
-                img.width() as i32,
-                img.height() as i32,
+                144,
+                144,
                 0,
                 gl::RGB,
                 gl::UNSIGNED_BYTE,
