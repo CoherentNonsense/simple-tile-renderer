@@ -409,7 +409,7 @@ impl App {
                 println!("Framebuffer is incomplete.");
             }
 
-            gl::Viewport(0, 0, 9 * columns as i32, 9 * columns as i32);
+            gl::Viewport(0, 0, 9 * columns as i32, 9 * rows as i32);
             gl::BindVertexArray(vao);
             gl::BindTexture(gl::TEXTURE_2D, texture);
             gl::UseProgram(program);
@@ -466,6 +466,8 @@ impl App {
             let size = self.window.inner_size();
             gl::Viewport(0, 0, size.width as i32, size.height as i32);
             gl::BindFramebuffer(gl::FRAMEBUFFER, 0);
+            gl::ClearColor(0.0, 0.0, 0.0, 1.0);
+            gl::Clear(gl::COLOR_BUFFER_BIT);
             gl::BindVertexArray(self.plane_vao);
             gl::BindTexture(gl::TEXTURE_2D, self.plane_texture);
             gl::UseProgram(self.plane_program);
@@ -512,31 +514,38 @@ impl App {
                             width = height * self.aspect_ratio;
                         }
 
+                        let x_gap = (size.width as f32 - width) / size.width as f32;
+                        let y_gap = (size.height as f32 - height) / size.height as f32;
+
+                        self.plane_vertices[0].position = [
+                            -1.0 + x_gap,
+                            -1.0 + y_gap,
+                        ];
                         self.plane_vertices[1].position = [
-                            -1.0,
-                            2.0 * height / size.height as f32 - 1.0,
+                            -1.0 + x_gap,
+                            1.0 - y_gap,
                         ];
                         self.plane_vertices[2].position = [
-                            2.0 * width / size.width as f32 - 1.0,
-                            -1.0
+                            1.0 - x_gap,
+                            -1.0 + y_gap,
                         ];
                         self.plane_vertices[3].position = [
-                            2.0 * width / size.width as f32 - 1.0,
-                            -1.0,
+                            1.0 - x_gap,
+                            -1.0 + y_gap,
                         ];
                         self.plane_vertices[4].position = [
-                            -1.0,
-                            2.0 * height / size.height as f32 - 1.0,
+                            -1.0 + x_gap,
+                            1.0 - y_gap,
                         ];
                         self.plane_vertices[5].position = [
-                            2.0 * width / size.width as f32 - 1.0,
-                            2.0 * height / size.height as f32 - 1.0,
+                            1.0 - x_gap,
+                            1.0 - y_gap,
                         ];
 
                         gl::BindBuffer(gl::ARRAY_BUFFER, self.plane_vbo);
                         gl::BufferData(gl::ARRAY_BUFFER, 4 * 4 * 6, self.plane_vertices.as_ptr().cast(), gl::STATIC_DRAW);
 
-                        gl::ClearColor(1.0, 0.0, 0.0, 1.0);
+                        gl::ClearColor(0.0, 0.0, 0.0, 1.0);
                         gl::Clear(gl::COLOR_BUFFER_BIT);
                         gl::BindVertexArray(self.plane_vao);
                         gl::BindTexture(gl::TEXTURE_2D, self.plane_texture);
@@ -555,7 +564,7 @@ impl App {
         self.count = 0;
 
         unsafe {
-            gl::Viewport(0, 0, 9 * self.columns as i32, 9 * self.columns as i32);
+            gl::Viewport(0, 0, 9 * self.columns as i32, 9 * self.rows as i32);
             gl::BindFramebuffer(gl::FRAMEBUFFER, self.fbo);
             gl::BindVertexArray(self.vao);
             gl::BindTexture(gl::TEXTURE_2D, self.texture);
@@ -584,8 +593,8 @@ impl App {
         ];
 
         let normalised_position: [f32; 2] = [
-            position[0] as f32 / self.columns as f32,
-            position[1] as f32 / self.rows as f32,
+            position[0] as f32 / self.columns as f32 * 2.0 - 1.0,
+            position[1] as f32 / self.rows as f32 * 2.0 - 1.0,
         ];
 
         let tile_screen_width = 2.0 / self.columns as f32;
